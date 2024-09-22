@@ -3,10 +3,24 @@
 ## Classes
 ### Simulator
     Attributes:
-
+        string* operations
+        int numOperations
+        int maxNumOperations
+        
     Functions:
-              add(op1, op2):
-                returns sum of 2 hexadecimal values
+            Simulator():
+                Default constructor
+            Simulator(int maxNO):
+                parametrized constructor
+            Simulator(const Simulator& rhs)
+                copy constructor
 
-    Functionality:
+            void processArgs(ofstream inputFile):
+                reads from input file, adds each operation to array of operations
+                
+            void addOperation(string op1):
+                adds string containing the operation and operands to operations array
+                
+            uint32_t add(uint32_t op1, uint32_t op2):
+                adds 2 hexadecimal values
     
