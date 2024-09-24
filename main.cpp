@@ -1,5 +1,5 @@
 //Jackson Loughmiller
-//Last edited: 9/21/2024
+//Last edited: 9/23/2024
 
 #include <iostream>
 #include <fstream>
@@ -33,12 +33,16 @@ int main(int argc, char *argv[]){
 }
 
 void runSimulator(Simulator sim, ifstream& file){
-
     int numLines = getNumLines(file);
 
     for (int i = 0; i < numLines; i++){
-        sim.processArgs(file);
-        sim.run(numLines);
+        if (sim.processArgs(file)){
+            sim.run(numLines);
+        }
+
+        else{
+            cout << "Failed to read given file" << endl;
+        }
     }
 }
 
@@ -50,7 +54,7 @@ int getNumLines(ifstream& file){
         numLines++;
     }
 
-    file.clear();
+    file.clear();  //resets to beginning of file
     file.seekg(0);
     return numLines;
 }

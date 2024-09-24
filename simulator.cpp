@@ -1,5 +1,5 @@
 //Jackson Loughmiller
-//Last Edited: 9/22/2024
+//Last Edited: 9/23/2024
 
 #include "simulator.h"
 
@@ -49,16 +49,15 @@ string Simulator::getStrOp2(){
 bool Simulator::processArgs(ifstream& inputFile){
     bool success = false;
     string inputString;
+
     if (getline(inputFile, inputString, '\n')){
         stringstream ss(inputString);
         ss >> currentOperation >> strOp1 >> strOp2;
-        success = true;
+
         intOp1 = convertOperand(strOp1);
         intOp2 = convertOperand(strOp2);
-    }
 
-    else{
-        cout << "Failed to read given file" << endl;
+        success = true;
     }
 
     return success;
@@ -89,11 +88,9 @@ void Simulator::add(){
 }
 
 void Simulator::printResult(){
-    int op1Len = strOp1.length();
-    int op2Len = strOp2.length();
+    int op1Len = strOp1.length(), op2Len = strOp2.length();
+    string op1Spaces, op2Spaces;
 
-    string op1Spaces;
-    string op2Spaces;
     for (int i = 0; i < 32-op1Len; i++){
         op1Spaces += ' ';
     }
@@ -105,13 +102,8 @@ void Simulator::printResult(){
 }
 
 void Simulator::run(int numLines){
-    
     if (currentOperation == "ADD"){
             add();
             printResult();
     }
-        
-    
-    
-
 }
