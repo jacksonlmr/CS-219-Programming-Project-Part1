@@ -1,26 +1,9 @@
 # CS-219-Programming-Project-Part1
 
-## Classes
-### Simulator
-    Attributes:
-        string* operations
-        int numOperations
-        int maxNumOperations
-        
-    Functions:
-            Simulator():
-                Default constructor
-            Simulator(int maxNO):
-                parametrized constructor
-            Simulator(const Simulator& rhs)
-                copy constructor
+## How to Run
+To run the program, just use the following command: ./simulator <fileName.txt>, where fileName is the name of the file containing the operations and operands to run. 
 
-            void processArgs(ofstream inputFile):
-                reads from input file, adds each operation to array of operations
-                
-            void addOperation(string op1):
-                adds string containing the operation and operands to operations array
-                
-            uint32_t add(uint32_t op1, uint32_t op2):
-                adds 2 hexadecimal values
-    
+ ##Working Process
+
+
+ The output of the program is correct, and there is an overflow for the third operation but none of the others. 
