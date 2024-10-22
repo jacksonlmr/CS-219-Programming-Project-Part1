@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/simulator",
-            "args": ["Programming-Project-1.txt"],
+            "args": ["testing.txt"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],

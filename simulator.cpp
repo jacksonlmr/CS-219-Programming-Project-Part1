@@ -57,6 +57,9 @@ bool Simulator::processArgs(ifstream& inputFile){
         intOp1 = convertOperand(strOp1);
         intOp2 = convertOperand(strOp2);
 
+        binOp1 = intOp1;
+        binOp2 = intOp2;
+
         success = true;
     }
 
@@ -82,10 +85,66 @@ string Simulator::convertOperand(uint32_t op){
     return strOp;
 }
 
+string Simulator::convertOperand(int32_t op){
+    stringstream ss;
+    ss << hex << op;
+    string strOp = ss.str();
+    strOp = "0x" + strOp;
+
+    return strOp;
+}
+
 void Simulator::add(){
     uint32_t returnSum = intOp1 + intOp2;
     result = convertOperand(returnSum);
 }
+
+void Simulator::AND(bool s){
+    for (int i = 0; i < 32; i++){
+        if (binOp1.test(i) && binOp2.test(i)){
+            binResult.set(i);
+        }
+
+        else{
+            binResult.reset(i);
+        }
+    }
+    
+    result = convertOperand((uint32_t)binResult.to_ulong());//converts binResult from binary to uint_32t then to hex
+}
+
+void Simulator::ASR(bool s){
+    binResult = binOp1;
+    for (int i = 0; i < intOp2; i++){//loop however many times the shift amount is
+//cout << "performing shift right" << endl; 
+        for (int j = 0; j < 31; j++){
+            if (binResult.test(j+1) == 1){
+                binResult.set(j);
+            }
+
+            else {
+                binResult.reset(j);
+            }
+        }
+    }
+    //cout << "binResult in ASR: " << binResult << endl;
+    //cout << "binOp1 in ASR:    " << binOp1 << endl;
+    result = convertOperand(binToDec(binResult));
+    //cout << "bruh";
+}
+
+void Simulator::LSR(bool s){}
+
+void Simulator::LSL(bool s){}
+
+void Simulator::NOT(bool s){}
+
+void Simulator::ORR(bool s){}
+
+void Simulator::SUB(bool s){}
+
+void Simulator::XOR(bool s){}
+
 
 void Simulator::printResult(){
     int op1Len = strOp1.length(), op2Len = strOp2.length();
@@ -102,8 +161,77 @@ void Simulator::printResult(){
 }
 
 void Simulator::run(int numLines){
-    if (currentOperation == "ADD"){
+    if (currentOperation == "ADD"){//need to change for ADDS
             add();
-            printResult();
     }
+
+    else if (currentOperation == "AND" || currentOperation == "ANDS"){
+        bool s = currentOperation.length() == 4;
+        AND(s);
+    }
+
+    else if (currentOperation == "ASR" || currentOperation == "ASRS"){
+        bool s = currentOperation.length() == 4;
+        ASR(s);
+    }
+
+    else if (currentOperation == "LSR" || currentOperation == "LSRS"){
+        bool s = currentOperation.length() == 4;
+        LSR(s);
+    }
+
+    else if (currentOperation == "LSL" || currentOperation == "LSLS"){
+        bool s = currentOperation.length() == 4;
+        LSL(s);
+    }
+
+    else if (currentOperation == "NOT" || currentOperation == "NOTS"){
+        bool s = currentOperation.length() == 4;
+        NOT(s);
+    }
+
+    else if (currentOperation == "ORR" || currentOperation == "ORRS"){
+        bool s = currentOperation.length() == 4;
+        ORR(s);
+    }
+
+    else if (currentOperation == "SUB" || currentOperation == "SUBS"){
+        bool s = currentOperation.length() == 4;
+        SUB(s);
+    }
+
+    else if (currentOperation == "XOR" || currentOperation == "XORS"){
+        bool s = currentOperation.length() == 4;
+        XOR(s);
+    }
+
+    printResult();
+}
+
+int32_t Simulator::binToDec(bitset<32> b){
+    int decimal = 0;
+
+    if (b.test(31)){
+        b.flip();
+        bool carry = true;
+
+        for (int i = 0; i < 32 && carry; i++){
+            if (b.test(i)){
+                b.flip(i);
+            }
+
+            else{
+                b.flip(i);
+                carry = false;
+            }
+        }
+    }
+
+    for (int i = 0; i < 32; i++){
+        if (b.test(i)){
+            decimal += pow(2, i);
+        }
+    }
+
+    return decimal;
 }
