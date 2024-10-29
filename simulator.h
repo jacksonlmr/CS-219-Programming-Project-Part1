@@ -12,6 +12,8 @@
 using namespace std;
 
 class Simulator{
+    int nFlag, zFlag, cFlag, vFlag;
+
     string currentOperation;
     uint32_t intOp1; //decimal representation of operands
     uint32_t intOp2;
@@ -29,7 +31,7 @@ class Simulator{
 
     public:
         Simulator();
-        Simulator(string cO, uint32_t iOp1, uint32_t iOp2, string sOp1, string sOp2);
+        Simulator(string cO, uint32_t iOp1, uint32_t iOp2, string sOp1, string sOp2, int n, int z, int c, int v);
         Simulator(const Simulator& rhs);
 
         string getCurrentOperation();
@@ -43,7 +45,7 @@ class Simulator{
         string convertOperand(uint32_t op);
         string convertOperand(int32_t op);
 
-        void add();
+        void add(bool s);
         void AND(bool s);
         void ASR(bool s);
         void LSR(bool s);

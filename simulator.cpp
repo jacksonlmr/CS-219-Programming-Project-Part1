@@ -8,14 +8,19 @@ Simulator::Simulator(){
    intOp2 = 0;
    strOp1 = "0x0";
    strOp2 = "0x0";
+   nFlag = zFlag = cFlag = vFlag = 0;
 }
 
-Simulator::Simulator(string cO, uint32_t iOp1, uint32_t iOp2, string sOp1, string sOp2){
+Simulator::Simulator(string cO, uint32_t iOp1, uint32_t iOp2, string sOp1, string sOp2, int n, int z, int c, int v){
    currentOperation = cO;
    intOp1 = iOp1;
    intOp2 = iOp2;
    strOp1 = sOp1;
    strOp2 = sOp2;
+   nFlag = n;
+   zFlag = z;
+   cFlag = c;
+   vFlag = v;
 }
 
 Simulator::Simulator(const Simulator& rhs){
@@ -24,7 +29,11 @@ Simulator::Simulator(const Simulator& rhs){
     intOp2 = rhs.intOp2;
     strOp1 = rhs.strOp1;
     strOp2 = rhs.strOp2;
-}
+    nFlag = rhs.nFlag;
+    zFlag = rhs.zFlag;
+    cFlag = rhs.cFlag;
+    vFlag = rhs.vFlag;
+    }
 
 string Simulator::getCurrentOperation(){
     return currentOperation;
@@ -94,29 +103,40 @@ string Simulator::convertOperand(int32_t op){
     return strOp;
 }
 
-void Simulator::add(){
-    uint32_t returnSum = intOp1 + intOp2;
-    result = convertOperand(returnSum);
+void Simulator::add(bool s){
+    if (s){
+        uint32_t returnSum = intOp1 + intOp2;
+        result = convertOperand(returnSum);
+        nFlag = returnSum < 0;
+        zFlag = returnSum == 0;
+    }
 }
 
 void Simulator::AND(bool s){
-    for (int i = 0; i < 32; i++){
-        if (binOp1.test(i) && binOp2.test(i)){
-            binResult.set(i);
-        }
-
-        else{
-            binResult.reset(i);
-        }
+    if (s){
+        result = convertOperand(intOp1 & intOp2);
+        nFlag = (intOp1 & intOp2) < 0;
+        zFlag = (intOp1 & intOp2) == 0;
     }
+    else{
+        result = convertOperand(intOp1 & intOp2);
+    }
+    // for (int i = 0; i < 32; i++){
+    //     if (binOp1.test(i) && binOp2.test(i)){
+    //         binResult.set(i);
+    //     }
+
+    //     else{
+    //         binResult.reset(i); 
+    //     }
+    // }
     
-    result = convertOperand((uint32_t)binResult.to_ulong());//converts binResult from binary to uint_32t then to hex
+    // result = convertOperand((uint32_t)binResult.to_ulong());//converts binResult from binary to uint_32t then to hex
 }
 
 void Simulator::ASR(bool s){
     binResult = binOp1;
     for (int i = 0; i < intOp2; i++){//loop however many times the shift amount is
-//cout << "performing shift right" << endl; 
         for (int j = 0; j < 31; j++){
             if (binResult.test(j+1) == 1){
                 binResult.set(j);
@@ -127,23 +147,89 @@ void Simulator::ASR(bool s){
             }
         }
     }
-    //cout << "binResult in ASR: " << binResult << endl;
-    //cout << "binOp1 in ASR:    " << binOp1 << endl;
     result = convertOperand(binToDec(binResult));
-    //cout << "bruh";
 }
 
-void Simulator::LSR(bool s){}
+void Simulator::LSR(bool s){
+    if (s){
+        nFlag = 0;
+        cFlag = intOp1 & 1;
+        
+        intOp1 = intOp1 >> intOp2;
+        result = convertOperand(intOp1);
 
-void Simulator::LSL(bool s){}
+        zFlag = intOp1 == 0;//I think this will work
+    }
 
-void Simulator::NOT(bool s){}
+    else{
+        intOp1 = intOp1 >> intOp2;
+        result = convertOperand(intOp1);
+    }
+}
 
-void Simulator::ORR(bool s){}
+void Simulator::LSL(bool s){
+    if (s){
+        nFlag = 0;
+        cFlag = intOp1 & 2147483648;//this number in binary only has one bit set, the MSB
+        
+        intOp1 = intOp1 << intOp2;
+        result = convertOperand(intOp1);
 
-void Simulator::SUB(bool s){}
+        zFlag = intOp1 == 0;//I think this will work
+    }
 
-void Simulator::XOR(bool s){}
+    else{
+        intOp1 = intOp1 >> intOp2;
+        result = convertOperand(intOp1);
+    }
+}
+
+void Simulator::NOT(bool s){
+    if (s){
+        intOp1 = ~intOp1;
+        result = convertOperand(intOp1);
+
+        nFlag = intOp1 < 0;
+        zFlag = intOp1 == 0;
+    }
+    else{
+        intOp1 = ~intOp1;
+        result = convertOperand(intOp1);
+    }
+}
+
+void Simulator::ORR(bool s){
+    if (s){
+        result = convertOperand(intOp1 | intOp2);
+        nFlag = intOp1 < 0;
+        zFlag = intOp1 == 0;
+    }
+    else{
+        result = convertOperand(intOp1 | intOp2);
+    }
+}
+
+void Simulator::SUB(bool s){//need to finish implementing this. not sure how to do carry flag
+    if (s){
+        result = convertOperand(intOp1 - intOp2);
+        nFlag = (intOp1 - intOp2) < 0;
+        zFlag = (intOp1 - intOp2) == 0;
+    }
+    else{
+        result = convertOperand(intOp1 - intOp2);
+    }
+}
+
+void Simulator::XOR(bool s){
+    if (s){
+        result = convertOperand(intOp1 ^ intOp2);
+        nFlag = (intOp1 ^ intOp2) < 0;
+        zFlag = (intOp1 ^ intOp2) == 0;
+    }
+    else{
+        result = convertOperand(intOp1 ^ intOp2);
+    }
+}
 
 
 void Simulator::printResult(){
@@ -157,12 +243,21 @@ void Simulator::printResult(){
     for (int i = 0; i < 32-op2Len; i++){
         op2Spaces += ' ';
     }
-    cout << currentOperation << op1Spaces << strOp1 << op2Spaces << strOp2 << ": " << result << endl;
+
+    if (currentOperation == "NOT" || currentOperation == "NOTS"){
+        cout << currentOperation << op1Spaces << strOp1 << ": " << result << endl;
+    }
+
+    else{
+        cout << currentOperation << op1Spaces << strOp1 << op2Spaces << strOp2 << ": " << result << endl;
+    }
+    cout << "N: " << nFlag << "Z: " << zFlag << endl;
 }
 
 void Simulator::run(int numLines){
-    if (currentOperation == "ADD"){//need to change for ADDS
-            add();
+    if (currentOperation == "ADD" || currentOperation == "ADDS"){//need to change for ADDS
+            bool s = currentOperation.length() == 4;
+            add(s);
     }
 
     else if (currentOperation == "AND" || currentOperation == "ANDS"){
