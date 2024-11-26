@@ -98,11 +98,20 @@ bool Simulator::processArgs(ifstream& inputFile){
         currentLine = inputString;
         removeCommas(inputString);
         stringstream ss(inputString);
-        ss >> currentOperation >> strOp1 >> strOp2;
+        ss >> currentOperation >> strOp1 >> strOp2 >> strOp3;
 
         // intOp1 = convertOperand(strOp1);
         // intOp2 = convertOperand(strOp2);
-        setInputs(strOp1, strOp2);
+        if (strOp3 == "\0"){
+            destinationRegister = strOp1;
+            setInputs(intOp1, intOp2, strOp1, strOp2);
+        }
+
+        else{
+            destinationRegister = strOp1;
+            setInputs(intOp2, intOp3, strOp2, strOp3);
+        }
+        
         
 
         binOp1 = intOp1;
@@ -114,53 +123,53 @@ bool Simulator::processArgs(ifstream& inputFile){
     return success;
 }
 
-void Simulator::setInputs(string op1, string op2){
+void Simulator::setInputs(uint32_t &toChange1, uint32_t &toChange2, string op1, string op2){
     if (op1 == "R1"){
-        intOp1 = r1;
+        toChange1 = r1;
     }
     else if (op1 == "R2"){
-        intOp1 = r2;
+        toChange1 = r2;
     }
     else if (op1 == "R3"){
-        intOp1 = r3;
+        toChange1 = r3;
     }
     else if (op1 == "R4"){
-        intOp1 = r4;
+        toChange1 = r4;
     }
     else if (op1 == "R5"){
-        intOp1 = r5;
+        toChange1 = r5;
     }
     else if (op1 == "R6"){
-        intOp1 = r6;
+        toChange1 = r6;
     }
     else {
-        intOp1 = r7;
+        toChange1 = r7;
     }
 
     if (op2 == "R1"){
-        intOp2 = r1;
+        toChange2 = r1;
     }
     else if (op2 == "R2"){
-        intOp2 = r2;
+        toChange2 = r2;
     }
     else if (op2 == "R3"){
-        intOp2 = r3;
+        toChange2 = r3;
     }
     else if (op2 == "R4"){
-        intOp2 = r4;
+        toChange2 = r4;
     }
     else if (op2 == "R5"){
-        intOp2 = r5;
+        toChange2 = r5;
     }
     else if (op2 == "R6"){
-        intOp2 = r6;
+        toChange2 = r6;
     }
     else if (op2 == "R7"){
-        intOp2 = r7;
+        toChange2 = r7;
     }
     else {
         strOp2 = op2;
-        intOp2 = convertOperand(strOp2);
+        toChange2 = convertOperand(strOp2);
     }
 }
 
@@ -218,21 +227,31 @@ string Simulator::convertOperand(int32_t op){
 
 void Simulator::add(bool s){
     if (s){
-        uint32_t returnSum = intOp1 + intOp2;
+        uint32_t returnSum = intOp2 + intOp3;
         result = convertOperand(returnSum);
-        nFlag = returnSum < 0;
+        setRegister(destinationRegister, convertOperand(result));
+        nFlag = int(returnSum) < 0;
         zFlag = returnSum == 0;
+        if (int(intOp2) > 0 && int(intOp3) > 0 && int(returnSum) < 0){
+            vFlag = 1;
+        }
+
+        else{
+            vFlag = 0;
+        }
     }
 }
 
 void Simulator::AND(bool s){
     if (s){
-        result = convertOperand(intOp1 & intOp2);
-        nFlag = (intOp1 & intOp2) < 0;
-        zFlag = (intOp1 & intOp2) == 0;
+        result = convertOperand(intOp2 & intOp3);
+        setRegister(destinationRegister, convertOperand(result));
+        nFlag = (intOp2 & intOp3) < 0;
+        zFlag = (intOp2 & intOp3) == 0;
     }
     else{
-        result = convertOperand(intOp1 & intOp2);
+        result = convertOperand(intOp2 & intOp3);
+        setRegister(destinationRegister, convertOperand(result));
     }
     // for (int i = 0; i < 32; i++){
     //     if (binOp1.test(i) && binOp2.test(i)){
@@ -249,7 +268,7 @@ void Simulator::AND(bool s){
 
 void Simulator::ASR(bool s){
     binResult = binOp1;
-    for (int i = 0; i < intOp2; i++){//loop however many times the shift amount is
+    for (int i = 0; i < intOp3; i++){//loop however many times the shift amount is
         for (int j = 0; j < 31; j++){
             if (binResult.test(j+1) == 1){
                 binResult.set(j);
@@ -261,86 +280,98 @@ void Simulator::ASR(bool s){
         }
     }
     result = convertOperand(binToDec(binResult));
+    setRegister(destinationRegister, convertOperand(result));
 }
 
 void Simulator::LSR(bool s){
     if (s){
         nFlag = 0;
-        cFlag = intOp1 & 1;
+        cFlag = intOp2 & 1;
         
-        intOp1 = intOp1 >> intOp2;
-        result = convertOperand(intOp1);
+        intOp2 = intOp2 >> intOp3;
+        result = convertOperand(intOp2);
+        setRegister(destinationRegister, convertOperand(result));
 
-        zFlag = intOp1 == 0;//I think this will work
+        zFlag = intOp2 == 0;//I think this will work
     }
 
     else{
-        intOp1 = intOp1 >> intOp2;
-        result = convertOperand(intOp1);
+        intOp2 = intOp2 >> intOp3;
+        result = convertOperand(intOp2);
     }
 }
 
 void Simulator::LSL(bool s){
     if (s){
         nFlag = 0;
-        cFlag = intOp1 & 2147483648;//this number in binary only has one bit set, the MSB
+        cFlag = intOp2 & 2147483648;//this number in binary only has one bit set, the MSB
         
-        intOp1 = intOp1 << intOp2;
-        result = convertOperand(intOp1);
+        intOp2 = intOp2 << intOp3;
+        result = convertOperand(intOp2);
+        setRegister(destinationRegister, convertOperand(result));
 
-        zFlag = intOp1 == 0;//I think this will work
+        zFlag = intOp2 == 0;//I think this will work
     }
 
     else{
-        intOp1 = intOp1 >> intOp2;
-        result = convertOperand(intOp1);
+        intOp2 = intOp2 >> intOp3;
+        result = convertOperand(intOp2);
+        setRegister(destinationRegister, convertOperand(result));
     }
 }
 
 void Simulator::NOT(bool s){
     if (s){
-        intOp1 = ~intOp1;
-        result = convertOperand(intOp1);
+        intOp2 = ~intOp2;
+        result = convertOperand(intOp2);
+        setRegister(destinationRegister, convertOperand(result));
 
-        nFlag = intOp1 < 0;
-        zFlag = intOp1 == 0;
+        nFlag = intOp2 < 0;
+        zFlag = intOp2 == 0;
     }
     else{
-        intOp1 = ~intOp1;
-        result = convertOperand(intOp1);
+        intOp2 = ~intOp2;
+        result = convertOperand(intOp2);
+        setRegister(destinationRegister, convertOperand(result));
     }
 }
 
 void Simulator::ORR(bool s){
     if (s){
-        result = convertOperand(intOp1 | intOp2);
-        nFlag = intOp1 < 0;
-        zFlag = intOp1 == 0;
+        result = convertOperand(intOp2 | intOp3);
+        setRegister(destinationRegister, convertOperand(result));
+        nFlag = intOp2 < 0;
+        zFlag = intOp2 == 0;
     }
     else{
-        result = convertOperand(intOp1 | intOp2);
+        result = convertOperand(intOp2 | intOp3);
+        setRegister(destinationRegister, convertOperand(result));
     }
 }
 
 void Simulator::SUB(bool s){//need to finish implementing this. not sure how to do carry flag
     if (s){
-        result = convertOperand(intOp1 - intOp2);
-        nFlag = (intOp1 - intOp2) < 0;
-        zFlag = (intOp1 - intOp2) == 0;
+        result = convertOperand(intOp2 - intOp3);
+        setRegister(destinationRegister, convertOperand(result));
+        nFlag = (intOp2 - intOp3) < 0;
+        zFlag = (intOp2 - intOp3) == 0;
     }
     else{
-        result = convertOperand(intOp1 - intOp2);
+        result = convertOperand(intOp2 - intOp3);
+        setRegister(destinationRegister, convertOperand(result));
     }
 }
 
 void Simulator::XOR(bool s){
     if (s){
-        result = convertOperand(intOp1 ^ intOp2);
-        nFlag = (intOp1 ^ intOp2) < 0;
-        zFlag = (intOp1 ^ intOp2) == 0;
+        result = convertOperand(intOp2 ^ intOp3);
+        setRegister(destinationRegister, convertOperand(result));
+        nFlag = (intOp2 ^ intOp3) < 0;
+        zFlag = (intOp2 ^ intOp3) == 0;
     }
     else{
-        result = convertOperand(intOp1 ^ intOp2);
+        result = convertOperand(intOp2 ^ intOp3);
+        setRegister(destinationRegister, convertOperand(result));
     }
 }
 

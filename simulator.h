@@ -19,12 +19,15 @@ class Simulator{
 
     string currentOperation;
     string currentLine;
+    string destinationRegister;
 
     uint32_t intOp1; //decimal representation of operands
     uint32_t intOp2;
+    uint32_t intOp3;
 
     string strOp1; //hex representation of operands
     string strOp2;
+    string strOp3;
 
     bitset<32> binOp1;
     bitset<32> binOp2;
@@ -58,7 +61,7 @@ class Simulator{
         string getStrOp2();
 
         bool processArgs(ifstream& inputFile);
-        void setInputs(string op1, string op2);
+        void setInputs(uint32_t &toChange1, uint32_t &toChange2, string op1, string op2);
         void setRegister(string reg, uint32_t num);
         uint32_t convertOperand(string op);
         string convertOperand(uint32_t op);
