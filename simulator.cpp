@@ -2,6 +2,7 @@
 //Last Edited: 9/23/2024
 
 #include "simulator.h"
+#include <algorithm>
 
 Simulator::Simulator(){
    intOp1 = intOp2 = 0;
@@ -97,7 +98,9 @@ bool Simulator::processArgs(ifstream& inputFile){
     if (getline(inputFile, inputString, '\n')){
         currentLine = inputString;
         removeCommas(inputString);
+        transform(inputString.begin(), inputString.end(), inputString.begin(), ::toupper);
         stringstream ss(inputString);
+        strOp3 = "\0";
         ss >> currentOperation >> strOp1 >> strOp2 >> strOp3;
 
         // intOp1 = convertOperand(strOp1);
@@ -174,7 +177,10 @@ void Simulator::setInputs(uint32_t &toChange1, uint32_t &toChange2, string op1, 
 }
 
 void Simulator::setRegister(string reg, uint32_t num){
-    if (reg == "R1"){
+    if (reg == "R0"){
+        r0 = num;
+    }
+    else if (reg == "R1"){
         r1 = num;
     }
     else if (reg == "R2"){
@@ -240,6 +246,11 @@ void Simulator::add(bool s){
             vFlag = 0;
         }
     }
+    else{
+        uint32_t returnSum = intOp2 + intOp3;
+        result = convertOperand(returnSum);
+        setRegister(destinationRegister, convertOperand(result));
+    }
 }
 
 void Simulator::AND(bool s){
@@ -248,6 +259,7 @@ void Simulator::AND(bool s){
         setRegister(destinationRegister, convertOperand(result));
         nFlag = (intOp2 & intOp3) < 0;
         zFlag = (intOp2 & intOp3) == 0;
+        vFlag = 0;
     }
     else{
         result = convertOperand(intOp2 & intOp3);
@@ -355,6 +367,13 @@ void Simulator::SUB(bool s){//need to finish implementing this. not sure how to 
         setRegister(destinationRegister, convertOperand(result));
         nFlag = (intOp2 - intOp3) < 0;
         zFlag = (intOp2 - intOp3) == 0;
+        if (intOp3 > intOp2){
+            vFlag = 1;
+            cFlag = 1;
+        }
+        else{
+            vFlag = 0;
+        }
     }
     else{
         result = convertOperand(intOp2 - intOp3);
@@ -389,7 +408,7 @@ void Simulator::removeCommas(string &s){
 
 void Simulator::printResult(){
     cout << currentLine << endl << 
-    "R0: " << r0 << 
+    "R0: " << convertOperand(r0) << 
     " R1: " << convertOperand(r1) << 
     " R2: " << convertOperand(r2) << 
     " R3: " << convertOperand(r3) << endl << 
