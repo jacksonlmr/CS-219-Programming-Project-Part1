@@ -127,7 +127,10 @@ bool Simulator::processArgs(ifstream& inputFile){
 }
 
 void Simulator::setInputs(uint32_t &toChange1, uint32_t &toChange2, string op1, string op2){
-    if (op1 == "R1"){
+    if (op1 == "R0"){
+        toChange1 = r0;
+    }
+    else if (op1 == "R1"){
         toChange1 = r1;
     }
     else if (op1 == "R2"){
@@ -149,7 +152,10 @@ void Simulator::setInputs(uint32_t &toChange1, uint32_t &toChange2, string op1, 
         toChange1 = r7;
     }
 
-    if (op2 == "R1"){
+    if (op2 == "R0"){
+        toChange2 = r0;
+    }
+    else if (op2 == "R1"){
         toChange2 = r1;
     }
     else if (op2 == "R2"){
@@ -259,7 +265,6 @@ void Simulator::AND(bool s){
         setRegister(destinationRegister, convertOperand(result));
         nFlag = (intOp2 & intOp3) < 0;
         zFlag = (intOp2 & intOp3) == 0;
-        vFlag = 0;
     }
     else{
         result = convertOperand(intOp2 & intOp3);
@@ -363,17 +368,12 @@ void Simulator::ORR(bool s){
 
 void Simulator::SUB(bool s){//need to finish implementing this. not sure how to do carry flag
     if (s){
-        result = convertOperand(intOp2 - intOp3);
+        uint32_t returnSum = intOp2 - intOp3;
+        result = convertOperand(returnSum);
         setRegister(destinationRegister, convertOperand(result));
-        nFlag = (intOp2 - intOp3) < 0;
-        zFlag = (intOp2 - intOp3) == 0;
-        if (intOp3 > intOp2){
-            vFlag = 1;
-            cFlag = 1;
-        }
-        else{
-            vFlag = 0;
-        }
+        nFlag = (returnSum) < 0;
+        zFlag = (returnSum) == 0;
+        cFlag = (intOp2 >= intOp3);
     }
     else{
         result = convertOperand(intOp2 - intOp3);
